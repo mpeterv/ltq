@@ -19,7 +19,8 @@ build = {
    modules = {
       ["ltq.inline"] = "src/ltq/inline.lua",
       ["ltq.builtins"] = "src/ltq/builtins.lua",
-      ["ltq.compile"] = "src/ltq/compile.lua"
+      ["ltq.compile"] = "src/ltq/compile.lua",
+      ["ltq.load"] = "src/ltq/load.lua",
    },
    copy_directories = {"spec"}
 }

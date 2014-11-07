@@ -110,8 +110,6 @@ function builtins.filter(env, var, f, a)
    }, {res_var}
 end
 
--- FIXME: table.sort is not pure (it sorts in-place).
-
 builtins.sort1 = bind1("sort")
 
 function builtins.sort2(env, var, f, a)
