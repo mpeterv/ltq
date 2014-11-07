@@ -67,6 +67,28 @@ end]], compile({tag = "Func",
       }))
    end)
 
+   it("compiles let expression", function()
+      -- \x (\x x * x)(x + x)
+      assert.equal([[
+function(v1)
+local v2 = (v1)+(v1)
+return (v2)*(v2)
+end]], compile({tag = "Func",
+         {tag = "Let",
+            {tag = "Builtin",
+               "mul",
+               {tag = "X"},
+               {tag = "X"}
+            },
+            {tag = "Builtin",
+               "add",
+               {tag = "X"},
+               {tag = "X"}
+            }
+         }
+      }))
+   end)
+
    it("compiles map function", function()
       -- \x map(x, \x x + 1)
       assert.equal([[
@@ -121,23 +143,65 @@ end]], compile({tag = "Func",
       }))
    end)
 
-   it("compiles let", function()
-      -- \x (\x x * x)(x + x)
+   it("compiles filter function", function()
+      -- \x filter(x, \x x == 1)
       assert.equal([[
 function(v1)
-local v2 = (v1)+(v1)
-return (v2)*(v2)
+local v2 = v1
+local v3 = {}
+local v4 = 0
+for v5 = 1, #v2 do
+local v6 = v2[v5]
+if (v6)==(1) then
+v4 = v4 + 1
+v3[v4] = v6
+end
+return v3
 end]], compile({tag = "Func",
-         {tag = "Let",
-            {tag = "Builtin",
-               "mul",
-               {tag = "X"},
-               {tag = "X"}
+         {tag = "Builtin",
+            "filter",
+            {tag = "Func",
+               {tag = "Builtin",
+                  "eq",
+                  {tag = "X"},
+                  1
+               }
+            },
+            {tag = "X"}
+         }
+      }))
+
+      -- \x map(x.books, \x x.author == "J. Doe")
+      assert.equal([[
+function(v1)
+local v2 = (v1)["books"]
+local v3 = {}
+local v4 = 0
+for v5 = 1, #v2 do
+local v6 = v2[v5]
+if ((v6)["author"])==("J. Doe") then
+v4 = v4 + 1
+v3[v4] = v6
+end
+return v3
+end]], compile({tag = "Func",
+         {tag = "Builtin",
+            "filter",
+            {tag = "Func",
+               {tag = "Builtin",
+                  "eq",
+                  {tag = "Builtin",
+                     "index",
+                     {tag = "X"},
+                     "author"
+                  },
+                  "J. Doe"
+               }
             },
             {tag = "Builtin",
-               "add",
+               "index",
                {tag = "X"},
-               {tag = "X"}
+               "books"
             }
          }
       }))

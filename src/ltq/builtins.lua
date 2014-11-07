@@ -67,4 +67,28 @@ function builtins.map(env, var, f, a)
    }, {res_var}
 end
 
+function builtins.filter(env, var, f, a)
+   assert(f.tag == "Func")
+   local fb = f[1]
+   local arr_var = env:var()
+   local res_var = env:var()
+   local c_var = env:var()
+   local i_var = env:var()
+   local item_var = env:var()
+   local arr_stat, arr_expr = env:compile(a, var)
+   local fb_stat, fb_expr = env:compile(fb, item_var)
+   return {arr_stat,
+      "local ", arr_var, " = ", arr_expr, "\n",
+      "local ", res_var, " = {}\n",
+      "local ", c_var, " = 0\n",
+      "for ", i_var, " = 1, #", arr_var, " do\n",
+         "local ", item_var, " = ", arr_var, "[", i_var, "]\n",
+         fb_stat,
+         "if ", fb_expr, " then\n",
+         c_var, " = ", c_var, " + 1\n",
+         res_var, "[", c_var, "] = ", item_var, "\n",
+      "end\n"
+   }, {res_var}
+end
+
 return builtins
