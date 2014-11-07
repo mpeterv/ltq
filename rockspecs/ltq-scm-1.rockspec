@@ -21,6 +21,7 @@ build = {
       ["ltq.builtins"] = "src/ltq/builtins.lua",
       ["ltq.compile"] = "src/ltq/compile.lua",
       ["ltq.load"] = "src/ltq/load.lua",
+      ["ltq.utils"] = "src/ltq/utils.lua"
    },
    copy_directories = {"spec"}
 }

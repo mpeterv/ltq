@@ -1,23 +1,5 @@
 local builtins = require "ltq.builtins"
-
--- FIXME: these should be in utils module.
-local unpack = table.unpack or unpack
-
-local function flatten_into(array, res)
-   for i = 1, #array do
-      if type(array[i]) == "table" then
-         flatten_into(array[i], res)
-      else
-         res[#res + 1] = array[i]
-      end
-   end
-
-   return res
-end
-
-local function flatten(array)
-   return flatten_into(array, {})
-end
+local utils = require "ltq.utils"
 
 -- Returns loadable representation of value.
 local function repr(v)
@@ -72,7 +54,7 @@ local function new_env()
          return {rhs_stat, "local ", var, " = ", rhs_expr, "\n", lhs_stat}, lhs_expr
       else
          assert(node.tag == "Builtin")
-         return builtins[node[1]](self, var, unpack(node, 2))
+         return builtins[node[1]](self, var, utils.unpack(node, 2))
       end
    end
 
@@ -82,7 +64,7 @@ end
 local function compile(node)
    local env = new_env()
    local _, expr_rope = env:compile(node)
-   local flat = flatten(expr_rope)
+   local flat = utils.flatten(expr_rope)
    return table.concat(flat)
 end
 
