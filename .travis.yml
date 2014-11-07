@@ -1,0 +1,18 @@
+language: c
+
+env:
+  - LUA="Lua 5.1"
+  - LUA="Lua 5.2"
+  - LUA="LuaJIT 2.0"
+
+before_install:
+  - bash .travis_setup.sh
+
+install:
+  - sudo luarocks make rockspecs/ltq-scm-1.rockspec
+  - sudo luarocks install busted
+  - sudo luarocks install luacheck
+
+script:
+  - busted spec
+  - luacheck rockspecs/ltq-scm-1.rockspec
