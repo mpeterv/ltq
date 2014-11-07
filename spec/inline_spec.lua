@@ -45,7 +45,7 @@ describe("inline", function()
       -- (\x 2*x)(x + x) == 2*(x + x)
       assert.same({tag = "Func",
          {tag = "Builtin",
-            "multiply",
+            "mul",
             2,
             {tag = "Builtin",
                "add",
@@ -57,7 +57,7 @@ describe("inline", function()
          {tag = "Call",
             {tag = "Func",
                {tag = "Builtin",
-                  "multiply",
+                  "mul",
                   2,
                   {tag = "X"}
                }
@@ -75,7 +75,7 @@ describe("inline", function()
       -- (\x (\x x * 3)(x + x))(x) == (x + x) * 3
       assert.same({tag = "Func",
          {tag = "Builtin",
-            "multiply",
+            "mul",
             {tag = "Builtin",
                "add",
                {tag = "X"},
@@ -89,7 +89,7 @@ describe("inline", function()
                {tag = "Call",
                   {tag = "Func",
                      {tag = "Builtin",
-                        "multiply",
+                        "mul",
                         {tag = "X"},
                         3
                      }
@@ -111,7 +111,7 @@ describe("inline", function()
       assert.same({tag = "Func",
          {tag = "Let",
             {tag = "Builtin",
-               "multiply",
+               "mul",
                {tag = "X"},
                {tag = "X"}
             },
@@ -125,7 +125,7 @@ describe("inline", function()
          {tag = "Call",
             {tag = "Func",
                {tag = "Builtin",
-                  "multiply",
+                  "mul",
                   {tag = "X"},
                   {tag = "X"}
                },

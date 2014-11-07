@@ -2,29 +2,44 @@
 -- and returning nested arrays of strings representing statement and expression parts of result.
 local builtins = {}
 
-function builtins.add(env, var, a, b)
-   local a_stat, a_expr = env:compile(a, var)
-   local b_stat, b_expr = env:compile(b, var)
-   return {a_stat, b_stat}, {"(", a_expr, ")+(", b_expr, ")"}
+-- Returns a builtin for a prefix unary opator.
+local function unop(op)
+   return function(env, var, a)
+      local a_stat, a_expr = env:compile(a, var)
+      return a_stat, {op, "(", a_expr, ")"}
+   end
 end
 
-function builtins.substract(env, var, a, b)
-   local a_stat, a_expr = env:compile(a, var)
-   local b_stat, b_expr = env:compile(b, var)
-   return {a_stat, b_stat}, {"(", a_expr, ")-(", b_expr, ")"}
+-- Returns a builtin for an infix binary operator.
+local function binop(op)
+   return function(env, var, a, b)
+      local a_stat, a_expr = env:compile(a, var)
+      local b_stat, b_expr = env:compile(b, var)
+      return {a_stat, b_stat}, {"(", a_expr, ")", op, "(", b_expr, ")"}
+   end
 end
 
-function builtins.multiply(env, var, a, b)
-   local a_stat, a_expr = env:compile(a, var)
-   local b_stat, b_expr = env:compile(b, var)
-   return {a_stat, b_stat}, {"(", a_expr, ")*(", b_expr, ")"}
-end
+builtins.unm = unop("-")
+builtins.add = binop("+")
+builtins.sub = binop("-")
+builtins.mul = binop("*")
+builtins.div = binop("/")
+builtins.pow = binop("^")
+builtins.mod = binop("%")
 
-function builtins.divide(env, var, a, b)
-   local a_stat, a_expr = env:compile(a, var)
-   local b_stat, b_expr = env:compile(b, var)
-   return {a_stat, b_stat}, {"(", a_expr, ")/(", b_expr, ")"}
-end
+builtins.len = unop("#")
+builtins.cat = binop("..")
+
+builtins.eq = binop("==")
+builtins.ne = binop("~=")
+builtins.lt = binop("<")
+builtins.lte = binop("<=")
+builtins.gt = binop(">")
+builtins.gte = binop(">=")
+
+builtins["not"] = unop("not")
+builtins["and"] = binop("and")
+builtins["or"] = binop("or")
 
 function builtins.index(env, var, a, b)
    local a_stat, a_expr = env:compile(a, var)

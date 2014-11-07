@@ -30,7 +30,7 @@ function(v1)
 return (v1)*(2)
 end]], compile({tag = "Func",
          {tag = "Builtin",
-            "multiply",
+            "mul",
             {tag = "X"},
             2
          }
@@ -130,7 +130,7 @@ return (v2)*(v2)
 end]], compile({tag = "Func",
          {tag = "Let",
             {tag = "Builtin",
-               "multiply",
+               "mul",
                {tag = "X"},
                {tag = "X"}
             },
