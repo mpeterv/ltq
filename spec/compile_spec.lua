@@ -156,6 +156,7 @@ if (v6)==(1) then
 v4 = v4 + 1
 v3[v4] = v6
 end
+end
 return v3
 end]], compile({tag = "Func",
          {tag = "Builtin",
@@ -182,6 +183,7 @@ local v6 = v2[v5]
 if ((v6)["author"])==("J. Doe") then
 v4 = v4 + 1
 v3[v4] = v6
+end
 end
 return v3
 end]], compile({tag = "Func",

@@ -25,16 +25,7 @@ end
 local function bind1(fname)
    return function(env, var, a)
       local a_stat, a_expr = env:compile(a, var)
-      return {a_stat, b_stat}, {fname, "(", a_expr, ")"}
-   end
-end
-
--- Returns a builtin for a Lua function taking two arguments.
-local function bind2(fname, nargs)
-   return function(env, var, a, b)
-      local a_stat, a_expr = env:compile(a, var)
-      local b_stat, b_expr = env:compile(b, var)
-      return {a_stat, b_stat}, {fname, "(", a_expr, ", ", b_expr, ")"}
+      return a_stat, {fname, "(", a_expr, ")"}
    end
 end
 
@@ -47,7 +38,7 @@ builtins.pow = binop("^")
 builtins.mod = binop("%")
 
 builtins.len = unop("#")
-builtins.cat = binop("..")
+builtins.concat = binop("..")
 
 builtins.eq = binop("==")
 builtins.ne = binop("~=")
@@ -106,6 +97,7 @@ function builtins.filter(env, var, f, a)
          "if ", fb_expr, " then\n",
          c_var, " = ", c_var, " + 1\n",
          res_var, "[", c_var, "] = ", item_var, "\n",
+         "end\n",
       "end\n"
    }, {res_var}
 end
