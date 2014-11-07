@@ -45,12 +45,12 @@ local function inline_call(node)
          containing_node[index] = arg
          return body
       else
-         return node
+         return {tag = "Let", body, arg}
       end
    end
 end
 
--- Inlines all calls within node, when possible.
+-- Inlines calls within node when possible, otherwise replaces calls with let expressions.
 local function inline(node)
    for i = 1, #node do
       if type(node[i]) == "table" then

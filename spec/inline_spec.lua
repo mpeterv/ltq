@@ -2,9 +2,9 @@ local inline = require "ltq.inline"
 
 describe("inline", function()
    it("inlines calls with x as argument", function()
-      -- (x: x + x)(x) == x + x
+      -- (\x x + x)(x) == x + x
       assert.same({tag = "Func",
-         {tag = "Thunk",
+         {tag = "Builtin",
             "add",
             {tag = "X"},
             {tag = "X"}
@@ -12,7 +12,7 @@ describe("inline", function()
       }, inline({tag = "Func",
          {tag = "Call",
             {tag = "Func",
-               {tag = "Thunk",
+               {tag = "Builtin",
                   "add",
                   {tag = "X"},
                   {tag = "X"}
@@ -24,7 +24,7 @@ describe("inline", function()
    end)
 
    it("inlines calls of constant functions", function()
-      -- (x: "foo")(x + x) == "foo"
+      -- (\x "foo")(x + x) == "foo"
       assert.same({tag = "Func",
          "foo"
       }, inline({tag = "Func",
@@ -32,7 +32,7 @@ describe("inline", function()
             {tag = "Func",
                "foo"
             },
-            {tag = "Thunk",
+            {tag = "Builtin",
                "add",
                {tag = "X"},
                {tag = "X"}
@@ -42,12 +42,12 @@ describe("inline", function()
    end)
 
    it("inlines calls of functions using x once", function()
-      -- (x: 2*x)(x + x) == 2*(x + x)
+      -- (\x 2*x)(x + x) == 2*(x + x)
       assert.same({tag = "Func",
-         {tag = "Thunk",
-            "mul",
+         {tag = "Builtin",
+            "multiply",
             2,
-            {tag = "Thunk",
+            {tag = "Builtin",
                "add",
                {tag = "X"},
                {tag = "X"}
@@ -56,13 +56,13 @@ describe("inline", function()
       }, inline({tag = "Func",
          {tag = "Call",
             {tag = "Func",
-               {tag = "Thunk",
-                  "mul",
+               {tag = "Builtin",
+                  "multiply",
                   2,
                   {tag = "X"}
                }
             },
-            {tag = "Thunk",
+            {tag = "Builtin",
                "add",
                {tag = "X"},
                {tag = "X"}
@@ -71,7 +71,71 @@ describe("inline", function()
       }))
    end)
 
-   pending("inlines calls of identity function")
-   pending("inlines calls of nested functions")
-   pending("does not inline calls of functions when not possible")
+   it("inlines calls of nested functions", function()
+      -- (\x (\x x * 3)(x + x))(x) == (x + x) * 3
+      assert.same({tag = "Func",
+         {tag = "Builtin",
+            "multiply",
+            {tag = "Builtin",
+               "add",
+               {tag = "X"},
+               {tag = "X"}
+            },
+            3
+         }
+      }, inline({tag = "Func",
+         {tag = "Call",
+            {tag = "Func",
+               {tag = "Call",
+                  {tag = "Func",
+                     {tag = "Builtin",
+                        "multiply",
+                        {tag = "X"},
+                        3
+                     }
+                  },
+                  {tag = "Builtin",
+                     "add",
+                     {tag = "X"},
+                     {tag = "X"}
+                  }
+               }
+            },
+            {tag = "X"}
+         }
+      }))
+   end)
+
+   it("replaces calls with let expressions when inlining is not possible", function()
+      -- (\x (\x x * x))(x + x)
+      assert.same({tag = "Func",
+         {tag = "Let",
+            {tag = "Builtin",
+               "multiply",
+               {tag = "X"},
+               {tag = "X"}
+            },
+            {tag = "Builtin",
+               "add",
+               {tag = "X"},
+               {tag = "X"}
+            }
+         }
+      }, inline({tag = "Func",
+         {tag = "Call",
+            {tag = "Func",
+               {tag = "Builtin",
+                  "multiply",
+                  {tag = "X"},
+                  {tag = "X"}
+               },
+            },
+            {tag = "Builtin",
+               "add",
+               {tag = "X"},
+               {tag = "X"}
+            }
+         }
+      }))
+   end)
 end)
