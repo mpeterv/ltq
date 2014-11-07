@@ -19,6 +19,25 @@ local function binop(op)
    end
 end
 
+-- FIXME: bound functions must be added to environment.
+
+-- Returns a builtin for a Lua function taking one argument.
+local function bind1(fname)
+   return function(env, var, a)
+      local a_stat, a_expr = env:compile(a, var)
+      return {a_stat, b_stat}, {fname, "(", a_expr, ")"}
+   end
+end
+
+-- Returns a builtin for a Lua function taking two arguments.
+local function bind2(fname, nargs)
+   return function(env, var, a, b)
+      local a_stat, a_expr = env:compile(a, var)
+      local b_stat, b_expr = env:compile(b, var)
+      return {a_stat, b_stat}, {fname, "(", a_expr, ", ", b_expr, ")"}
+   end
+end
+
 builtins.unm = unop("-")
 builtins.add = binop("+")
 builtins.sub = binop("-")
@@ -89,6 +108,33 @@ function builtins.filter(env, var, f, a)
          res_var, "[", c_var, "] = ", item_var, "\n",
       "end\n"
    }, {res_var}
+end
+
+-- FIXME: table.sort is not pure (it sorts in-place).
+
+builtins.sort1 = bind1("sort")
+
+function builtins.sort2(env, var, f, a)
+   assert(f.tag == "Func")
+   local fb = f[1]
+   -- table.sort takes a comparator function, ltq sort takes a key function.
+   -- To convert, build a table mapping items to their keys.
+   -- FIXME: key can happen to be nil or NaN.
+   local arr_var = env:var()
+   local keys_var = env:var()
+   local i_var = env:var()
+   local item_var = env:var()
+   local arr_stat, arr_expr = env:compile(a, var)
+   local key_stat, key_expr = env:compile(fb, item_var)
+   return {arr_stat,
+      "local ", arr_var, " = ", arr_expr, "\n",
+      "local ", keys_var, " = {}\n",
+      "for ", i_var, " = 1, #", arr_var, " do\n",
+         "local ", item_var, " = ", arr_var, "[", i_var, "]\n",
+         key_stat,
+         keys_var, "[", item_var, "] = ", key_expr, "\n",
+      "end\n"
+   }, {"sort(", arr_var, ", function(a, b) return ", keys_var, "[a] < ", keys_var, "[b] end)"}
 end
 
 return builtins

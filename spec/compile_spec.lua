@@ -90,7 +90,7 @@ end]], compile({tag = "Func",
    end)
 
    it("compiles map function", function()
-      -- \x map(x, \x x + 1)
+      -- \x map(\x x + 1, x)
       assert.equal([[
 function(v1)
 local v2 = v1
@@ -114,7 +114,7 @@ end]], compile({tag = "Func",
          }
       }))
 
-      -- \x map(x.books, \x x.author)
+      -- \x map(\x x.author, x.books)
       assert.equal([[
 function(v1)
 local v2 = (v1)["books"]
@@ -144,7 +144,7 @@ end]], compile({tag = "Func",
    end)
 
    it("compiles filter function", function()
-      -- \x filter(x, \x x == 1)
+      -- \x filter(\x x == 1, x)
       assert.equal([[
 function(v1)
 local v2 = v1
@@ -171,7 +171,7 @@ end]], compile({tag = "Func",
          }
       }))
 
-      -- \x map(x.books, \x x.author == "J. Doe")
+      -- \x filter(\x x.author == "J. Doe", x.books)
       assert.equal([[
 function(v1)
 local v2 = (v1)["books"]
@@ -196,6 +196,53 @@ end]], compile({tag = "Func",
                      "author"
                   },
                   "J. Doe"
+               }
+            },
+            {tag = "Builtin",
+               "index",
+               {tag = "X"},
+               "books"
+            }
+         }
+      }))
+   end)
+
+   it("compiles sort1 function", function()
+      -- \x sort1(x.books)
+      assert.equal([[
+function(v1)
+return sort((v1)["books"])
+end]], compile({tag = "Func",
+         {tag = "Builtin",
+            "sort1",
+            {tag = "Builtin",
+               "index",
+               {tag = "X"},
+               "books"
+            }
+         }
+      }))
+   end)
+
+   it("compiles sort2 function", function()
+      -- \x sort2(\x x.year, x.books)
+      assert.equal([[
+function(v1)
+local v2 = (v1)["books"]
+local v3 = {}
+for v4 = 1, #v2 do
+local v5 = v2[v4]
+v3[v5] = (v5)["year"]
+end
+return sort(v2, function(a, b) return v3[a] < v3[b] end)
+end]], compile({tag = "Func",
+         {tag = "Builtin",
+            "sort2",
+            {tag = "Func",
+               {tag = "Builtin",
+                  "index",
+                  {tag = "X"},
+                  "year"
                }
             },
             {tag = "Builtin",
