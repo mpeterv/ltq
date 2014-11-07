@@ -164,6 +164,53 @@ return (sort(v1))[3]
 end]], src)
    end)
 
+   it("builds if", function()
+      -- .flag ? .t : .f
+      local f, src = pipeline({tag = "Spec",
+         "`if`",
+         {tag = "Spec",
+            "`index`",
+            {tag = "Spec",
+               "`id`"
+            },
+            {tag = "Literal",
+               "flag"
+            }
+         },
+         {tag = "Spec",
+            "`index`",
+            {tag = "Spec",
+               "`id`"
+            },
+            {tag = "Literal",
+               "t"
+            }
+         },
+         {tag = "Spec",
+            "`index`",
+            {tag = "Spec",
+               "`id`"
+            },
+            {tag = "Literal",
+               "f"
+            }
+         }
+      })
+
+      assert.same(3, f({flag = true, t = 3, f = 5}))
+      assert.same(5, f({flag = false, t = 3, f = 5}))
+      assert.equal([[
+function(v1)
+local v2
+if (v1)["flag"] then
+v2 = (v1)["t"]
+else
+v2 = (v1)["f"]
+end
+return v2
+end]], src)
+   end)
+
    it("builds a lot of nested macros", function()
       -- .books | filter(.year >= 2000) \ .ISBN | sort
       local f, src = pipeline({tag = "Spec",

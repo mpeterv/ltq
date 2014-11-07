@@ -255,4 +255,37 @@ end]], compile({tag = "Func",
          }
       }))
    end)
+
+   it("compiles if function", function()
+      -- \x x.flag ? x.t : x.f
+      assert.equal([[
+function(v1)
+local v2
+if (v1)["flag"] then
+v2 = (v1)["t"]
+else
+v2 = (v1)["f"]
+end
+return v2
+end]], compile({tag = "Func",
+         {tag = "Builtin",
+            "if",
+            {tag = "Builtin",
+               "index",
+               {tag = "X"},
+               "flag"
+            },
+            {tag = "Builtin",
+               "index",
+               {tag = "X"},
+               "t"
+            },
+            {tag = "Builtin",
+               "index",
+               {tag = "X"},
+               "f"
+            }
+         }
+      }))
+   end)
 end)

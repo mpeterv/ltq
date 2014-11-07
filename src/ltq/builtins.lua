@@ -57,6 +57,24 @@ function builtins.index(env, var, a, b)
    return {a_stat, b_stat}, {"(", a_expr, ")[", b_expr, "]"}
 end
 
+builtins["if"] = function(env, var, cond, t, f)
+   local res_var = env:var()
+   local cond_stat, cond_expr = env:compile(cond, var)
+   local true_stat, true_expr = env:compile(t, var)
+   local false_stat, false_expr = env:compile(f, var)
+   return {
+      cond_stat,
+      "local ", res_var, "\n",
+      "if ", cond_expr, " then\n",
+         true_stat,
+         res_var, " = ", true_expr, "\n",
+      "else\n",
+         false_stat,
+         res_var, " = ", false_expr, "\n",
+      "end\n"
+   }, {res_var}
+end
+
 function builtins.map(env, var, f, a)
    assert(f.tag == "Func")
    local fb = f[1]

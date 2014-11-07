@@ -106,6 +106,8 @@ macros["`id`"] = function()
    }
 end
 
+macros["`if`"] = bmacro("if", {TVALUE, TVALUE, TVALUE})
+
 macros["`unm`"] = unmacro("unm")
 macros["`add`"] = binmacro("add")
 macros["`sub`"] = binmacro("sub")
