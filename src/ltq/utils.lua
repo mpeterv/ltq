@@ -24,4 +24,14 @@ function utils.flatten(array)
    return flatten_into(array, {})
 end
 
+function utils.array_to_set(array)
+   local set = {}
+
+   for i = 1, #array do
+      set[array[i]] = true
+   end
+
+   return set
+end
+
 return utils
