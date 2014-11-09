@@ -24,15 +24,36 @@ WIP.
 
 - [ ] compiler pipeline
   - [ ] lex
+    - [x] punctuation
+    - [ ] short strings
+      - [x] simple short strings
+      - [x] simple escape sequences
+      - [ ] multiline short strings
+      - [ ] decimal escape sequences
+      - [ ] hexadecimal escape sequences
+      - [ ] UTF-8 escape sequences
+      - [ ] `\z` escape sequence
+    - [ ] long strings
+    - [ ] numbers
+      - [x] decimal numbers
+      - [ ] hexadecimal numbers
+    - [ ] comments
+      - [ ] short coments
+      - [ ] long comments
+    - [ ] error handling
   - [ ] parse
-  - [x] expand
+  - [ ] expand
+    - [x] expand macros by name
+    - [ ] expand macros by number of parameters
   - [x] inline
-  - [x] compile
+  - [ ] compile
+    - [x] compile primitives by name
+    - [ ] compile primitives by number of arguments
   - [x] load
 - [ ] built-in macros
   - [ ] add more
-  - [ ] resolution by number of parameters (`sort` and `sort(.id)` instead of `sort0` and `sort1(.id)`)
   - [ ] vararg indexing macro
+  - [ ] vararg table construction macro
   - [ ] autoapply on over-parameterization (`#.name` instead of `.name | #`)
 - [ ] other
   - [ ] possibility to bind Lua functions and use them as macros
