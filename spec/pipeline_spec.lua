@@ -18,7 +18,6 @@ end
 
 describe("pipeline", function()
    it("builds identity function", function()
-      -- .
       local f, src = pipeline(".")
 
       assert.equal(26, f(26))

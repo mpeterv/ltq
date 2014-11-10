@@ -59,3 +59,28 @@ WIP.
   - [ ] possibility to bind Lua functions and use them as macros
   - [ ] interpreter
   - [ ] documentation
+
+## Grammar
+
+```
+exp ::= nil | false | true | Number | String | table | macro | index |
+        exp binop exp | unop [exp] | exp '?' exp ':' exp
+
+table ::= '{' [ pair { sep pair } [sep] ] '}'
+
+pair ::= exp | (Name | '[' exp ']') '=' exp
+
+sep ::= ',' | ';'
+
+macro ::= Name | Name '(' [ exp {',' exp} ] ')'
+
+index ::= prefix { '.' Name | '[' exp ']' }
+
+prefix ::= '.' | '.' Name | '(' exp ')'
+
+binop ::= '+' | '-' | '*' | '/' | '//' | '^' | '%' | '..' |
+          '<' | '<=' | '>' | '>=' | '==' | '~=' |
+          and | or | '|' | '\'
+
+unop ::= '-' | not | '#' | '\'
+```
