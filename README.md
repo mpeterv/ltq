@@ -41,7 +41,7 @@ WIP.
       - [ ] short coments
       - [ ] long comments
     - [ ] error handling
-  - [ ] parse
+  - [x] parse
   - [ ] expand
     - [x] expand macros by name
     - [ ] expand macros by number of parameters

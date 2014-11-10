@@ -120,7 +120,7 @@ macros["`len`"] = unmacro("len")
 macros["`concat`"] = unmacro("concat")
 
 macros["`eq`"] = binmacro("eq")
-macros["`ne`"] = binmacro("ne")
+macros["`neq`"] = binmacro("neq")
 macros["`lt`"] = binmacro("lt")
 macros["`lte`"] = binmacro("lte")
 macros["`gt`"] = binmacro("gt")

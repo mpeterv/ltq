@@ -18,6 +18,7 @@ build = {
    type = "builtin",
    modules = {
       ["ltq.lex"] = "src/ltq/lex.lua",
+      ["ltq.parse"] = "src/ltq/parse.lua",
       ["ltq.expand"] = "src/ltq/expand.lua",
       ["ltq.macros"] = "src/ltq/macros.lua",
       ["ltq.inline"] = "src/ltq/inline.lua",

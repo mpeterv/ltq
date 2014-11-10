@@ -1,9 +1,13 @@
+local lex = require "ltq.lex"
+local parse = require "ltq.parse"
 local expand = require "ltq.expand"
 local inline = require "ltq.inline"
 local compile = require "ltq.compile"
 local load = require "ltq.load"
 
-local function pipeline(ast)
+local function pipeline(src)
+   local tokens = lex(src)
+   local ast = parse(tokens)
    local expanded = expand(ast)
    local inlined = inline(expanded)
    local compiled = compile(inlined)
@@ -15,9 +19,7 @@ end
 describe("pipeline", function()
    it("builds identity function", function()
       -- .
-      local f, src = pipeline({tag = "Spec",
-         "`id`"
-      })
+      local f, src = pipeline(".")
 
       assert.equal(26, f(26))
       assert.equal([[
@@ -27,10 +29,7 @@ end]], src)
    end)
 
    it("builds literals", function()
-      -- 15
-      local f, src = pipeline({tag = "Literal",
-         15
-      })
+      local f, src = pipeline("15")
 
       assert.equal(15, f(26))
       assert.equal([[
@@ -40,10 +39,7 @@ end]], src)
    end)
 
    it("builds nullary macros", function()
-      -- #
-      local f, src = pipeline({tag = "Spec",
-         "`len`"
-      })
+      local f, src = pipeline("#")
 
       assert.equal(3, f("foo"))
       assert.equal([[
@@ -53,16 +49,7 @@ end]], src)
    end)
 
    it("builds binops", function()
-      -- . + .
-      local f, src = pipeline({tag = "Spec",
-         "`add`",
-         {tag = "Spec",
-            "`id`"
-         },
-         {tag = "Spec",
-            "`id`"
-         }
-      })
+      local f, src = pipeline(". + .")
 
       assert.equal(46, f(23))
       assert.equal([[
@@ -72,16 +59,7 @@ end]], src)
    end)
 
    it("builds indexing", function()
-      -- .books
-      local f, src = pipeline({tag = "Spec",
-         "`index`",
-         {tag = "Spec",
-            "`id`"
-         },
-         {tag = "Literal",
-            "books"
-         }
-      })
+      local f, src = pipeline(".books")
 
       assert.equal(41, f({books = 41}))
       assert.equal([[
@@ -91,10 +69,7 @@ end]], src)
    end)
 
    it("builds nullary named macros", function()
-      -- sort
-      local f, src = pipeline({tag = "Spec",
-         "sort0"
-      })
+      local f, src = pipeline("sort0")
 
       assert.same({1, 2, 3, 4, 5}, f({3, 2, 4, 1, 5}))
       assert.equal([[
@@ -104,19 +79,7 @@ end]], src)
    end)
 
    it("builds unary named macros", function()
-      -- sort(.name)
-      local f, src = pipeline({tag = "Spec",
-         "sort1",
-         {tag = "Spec",
-            "`index`",
-            {tag = "Spec",
-               "`id`"
-            },
-            {tag = "Literal",
-               "name"
-            }
-         }
-      })
+      local f, src = pipeline("sort1(.name)")
 
       assert.same({
          {name = "Alice"},
@@ -140,22 +103,7 @@ end]], src)
    end)
 
    it("builds pipe", function()
-      -- sort | .[3]
-      local f, src = pipeline({tag = "Spec",
-         "`pipe`",
-         {tag = "Spec",
-            "sort0"
-         },
-         {tag = "Spec",
-            "`index`",
-            {tag = "Spec",
-               "`id`"
-            },
-            {tag = "Literal",
-               3
-            }
-         }
-      })
+      local f, src = pipeline("sort0 | .[3]")
 
       assert.same(4, f({4, 3, 5, 2, 6}))
       assert.equal([[
@@ -165,37 +113,7 @@ end]], src)
    end)
 
    it("builds if", function()
-      -- .flag ? .t : .f
-      local f, src = pipeline({tag = "Spec",
-         "`if`",
-         {tag = "Spec",
-            "`index`",
-            {tag = "Spec",
-               "`id`"
-            },
-            {tag = "Literal",
-               "flag"
-            }
-         },
-         {tag = "Spec",
-            "`index`",
-            {tag = "Spec",
-               "`id`"
-            },
-            {tag = "Literal",
-               "t"
-            }
-         },
-         {tag = "Spec",
-            "`index`",
-            {tag = "Spec",
-               "`id`"
-            },
-            {tag = "Literal",
-               "f"
-            }
-         }
-      })
+      local f, src = pipeline(".flag ? .t : .f")
 
       assert.same(3, f({flag = true, t = 3, f = 5}))
       assert.same(5, f({flag = false, t = 3, f = 5}))
@@ -212,58 +130,7 @@ end]], src)
    end)
 
    it("builds a lot of nested macros", function()
-      -- .books | filter(.year >= 2000) \ .ISBN | sort
-      local f, src = pipeline({tag = "Spec",
-         "`pipe`",
-         {tag = "Spec",
-            "`index`",
-            {tag = "Spec",
-               "`id`"
-            },
-            {tag = "Literal",
-               "books"
-            }
-         },
-         {tag = "Spec",
-            "`pipe`",
-            {tag = "Spec",
-               "filter",
-               {tag = "Spec",
-                  "`gte`",
-                  {tag = "Spec",
-                     "`index`",
-                     {tag = "Spec",
-                        "`id`"
-                     },
-                     {tag = "Literal",
-                        "year"
-                     }
-                  },
-                  {tag = "Literal",
-                     2000
-                  }
-               }
-            },
-            {tag = "Spec",
-               "`pipe`",
-               {tag = "Spec",
-                  "`map`",
-                  {tag = "Spec",
-                     "`index`",
-                     {tag = "Spec",
-                        "`id`"
-                     },
-                     {tag = "Literal",
-                        "ISBN"
-                     }
-                  }
-               },
-               {tag = "Spec",
-                  "sort0"
-               }
-            }
-         }
-      })
+      local f, src = pipeline(".books | filter(.year >= 2000) \\ .ISBN | sort0")
 
       assert.same({
          "1759340132",

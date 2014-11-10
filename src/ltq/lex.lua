@@ -169,7 +169,7 @@ local function lex_next(lstate)
 end
 
 -- Returns array of tokens or nil, error. FIXME: actually return nil, error.
--- A token is a table {[value], tag = tag, offest = offset}.
+-- A token is a table {tag = tag, offest = offset, value = [value]}.
 -- tag is the token body itself for primitive tokens(E.g. ".") or "name", "string" or "number".
 -- value is the name as string for "name" tokens, and value of literal for "string" and "number" tokens.
 -- Multi-character primitive tokens are:
@@ -196,7 +196,7 @@ local function lex(src)
          tokens[#tokens + 1] = {
             tag = tag,
             offset = offset,
-            value
+            value = value
          }
       end
    end

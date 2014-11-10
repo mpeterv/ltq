@@ -41,7 +41,7 @@ builtins.len = unop("#")
 builtins.concat = binop("..")
 
 builtins.eq = binop("==")
-builtins.ne = binop("~=")
+builtins.neq = binop("~=")
 builtins.lt = binop("<")
 builtins.lte = binop("<=")
 builtins.gt = binop(">")
