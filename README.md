@@ -40,7 +40,7 @@ WIP.
     - [ ] comments
       - [ ] short coments
       - [ ] long comments
-    - [ ] error handling
+    - [x] error handling
   - [x] parse
   - [ ] expand
     - [x] expand macros by name

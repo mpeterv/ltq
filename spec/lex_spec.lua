@@ -1,4 +1,27 @@
-local lex = require "ltq.lex"
+local lex_ = require "ltq.lex".lex
+
+local function lex(src)
+   local res, err = lex_(src)
+   assert(res, err)
+
+   for i = 1, #res do
+      assert.equal(1, res[i].line)
+      assert.equal(1, res[i].line_offset)
+      res[i].line = nil
+      res[i].line_offset = nil
+   end
+
+   assert.equal("EOF", res[#res].tag)
+   assert.equal(#src + 1, res[#res].offset)
+   res[#res] = nil
+   return res
+end
+
+local function lerror(src)
+   local res, err = lex_(src)
+   assert.is_nil(res)
+   return err
+end
 
 describe("lex", function()
    it("lexes empty string", function()
@@ -69,5 +92,21 @@ describe("lex", function()
          {tag = "string", offset = 27, value = "\'\"\\"},
          {tag = "string", offset = 36, value = "line1\nline2"}
       }, lex([["" '' "foo" 'bar' '"' "'" "\'\"\\" "line1\nline2"]]))
+   end)
+
+   it("returns error on invalid input", function()
+      assert.equal([[ltq:1:1: malformed number
+    1.2.3
+    ^]], lerror([[1.2.3]]))
+      assert.equal([[ltq:1:5: unfinished string
+    foo(')
+        ^]], lerror([[foo(')]]))
+      assert.equal([[ltq:3:6: invalid escape sequence
+    bar('\y')
+         ^]], lerror([[
+foo
++
+bar('\y')
+]]))
    end)
 end)

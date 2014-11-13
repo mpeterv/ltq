@@ -1,4 +1,3 @@
-local lex = require "ltq.lex"
 local parse = require "ltq.parse"
 local expand = require "ltq.expand"
 local inline = require "ltq.inline"
@@ -6,8 +5,7 @@ local compile = require "ltq.compile"
 local load = require "ltq.load"
 
 local function pipeline(src)
-   local tokens = lex(src)
-   local ast = parse(tokens)
+   local ast = assert(parse(src))
    local expanded = expand(ast)
    local inlined = inline(expanded)
    local compiled = compile(inlined)

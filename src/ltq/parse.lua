@@ -1,29 +1,61 @@
+local lex = require "ltq.lex"
 local utils = require "ltq.utils"
 
 local parse_expression
 
 local function get_token(pstate, index)
-   return pstate.tokens[index] or {tag = "EOF"}
+   return pstate.tokens[index]
 end
 
 local function skip_token(pstate)
+   local token = pstate.token
    pstate.token_index = pstate.token_index + 1
    pstate.token = get_token(pstate, pstate.token_index)
+   return token
 end
 
-local function check_token(pstate, tag)
-   assert(pstate.token.tag == tag, ("expected %s, got %s"):format(tag, pstate.token.tag))
+local token_representations = {
+   EOF = "<eof>",
+   name = "identifier",
+   number = "number",
+   string = "string"
+}
+
+local function token_to_string(tag)
+   return token_representations[tag] or ("'" .. tag .. "'")
 end
 
-local function check_and_skip_token(pstate, tag)
-   check_token(pstate, tag)
-   skip_token(pstate)
+local function check_token(pstate, tag, msg)
+   lex.assert(pstate.token.tag == tag, pstate, pstate.token, msg or (token_to_string(tag) .. " expected"))
+end
+
+local function check_and_skip_token(pstate, tag, msg)
+   check_token(pstate, tag, msg)
+   return skip_token(pstate)
+end
+
+local token_pairs = {
+   ["("] = ")",
+   ["{"] = "}",
+   ["["] = "]"
+}
+
+local function match_token(pstate, opening_token)
+   local msg
+   local expectation = token_pairs[opening_token.tag]
+
+   if opening_token.line ~= pstate.token.line then
+      msg = ("%s expected (to close %s at line %d)"):format(
+         token_to_string(expectation), token_to_string(opening_token.tag), opening_token.line
+      )
+   end
+
+   check_and_skip_token(pstate, expectation, msg)
 end
 
 local function test_token(pstate, tag)
    if pstate.token.tag == tag then
-      skip_token(pstate)
-      return true
+      return skip_token(pstate)
    else
       return false
    end
@@ -75,9 +107,9 @@ local function parse_primary_expression(pstate)
          return spec("`id`")
       end
    else
-      check_and_skip_token(pstate, "(")
+      local opening = check_and_skip_token(pstate, "(", "expected expression")
       local expression = parse_expression(pstate)
-      check_and_skip_token(pstate, ")")
+      match_token(pstate, opening)
       return expression
    end
 end
@@ -92,9 +124,9 @@ local function parse_suffixed_expression(pstate)
          local index = literal(check_name(pstate))
          index_chain[#index_chain + 1] = index
       elseif pstate.token.tag == "[" then
-         skip_token(pstate)
+         local opening = skip_token(pstate)
          local index = parse_expression(pstate)
-         check_and_skip_token(pstate, "]")
+         match_token(pstate, opening)
          index_chain[#index_chain + 1] = index
       else
          break
@@ -118,9 +150,9 @@ local function parse_pair(pstate)
          skip_token(pstate)
       end
    elseif pstate.token.tag == "[" then
-      skip_token(pstate)
+      local opening = skip_token(pstate)
       index = parse_expression(pstate)
-      check_and_skip_token(pstate, "]")
+      match_token(pstate, opening)
       check_and_skip_token(pstate, "=")
    end
 
@@ -131,7 +163,7 @@ end
 -- table ::= "{" [ pair { sep pair } [sep] ] "}"
 -- sep ::= "," | ";"
 local function parse_table(pstate)
-   check_and_skip_token(pstate, "{")
+   local opening = check_and_skip_token(pstate, "{")
 
    local parameters = {}
    local next_array_index = 1
@@ -152,7 +184,7 @@ local function parse_table(pstate)
       parameters[#parameters + 1] = value
    until not test_token(pstate, ",") and not test_token(pstate, ";")
 
-   check_and_skip_token(pstate, "}")
+   match_token(pstate, opening)
    return spec("`table`", utils.unpack(parameters))
 end
 
@@ -162,7 +194,7 @@ local function parse_macro(pstate)
    local parameters = {}
 
    if pstate.token.tag == "(" then
-      skip_token(pstate)
+      local opening = skip_token(pstate)
 
       if not test_token(pstate, ")") then
          repeat
@@ -170,7 +202,7 @@ local function parse_macro(pstate)
             parameters[#parameters + 1] = parameter
          until not test_token(pstate, ",")
 
-         check_and_skip_token(pstate, ")")
+         match_token(pstate, opening)
       end
    end
 
@@ -300,11 +332,10 @@ function parse_expression(pstate)
    return parse_subexpression(pstate, 0)
 end
 
--- Takes array of tokens, returns ast or nil, error. FIXME: actually return nil, error.
--- ast is a table {tag = tag, ast*}.
--- parse produces ast with tags "Spec" (macro specialization) and "Literal" (which carry literal value as first item).
-local function parse(tokens)
+local function parse_(src, chunkname, tokens)
    local pstate = {
+      src = src,
+      chunkname = chunkname,
       tokens = tokens,
       token_index = 0
    }
@@ -313,6 +344,26 @@ local function parse(tokens)
    local res = parse_expression(pstate)
    check_token(pstate, "EOF")
    return res
+end
+
+-- Returns ast or nil, error. FIXME: actually return nil, error.
+-- ast is a table {tag = tag, ast*}.
+-- parse produces ast with tags "Spec" (macro specialization) and "Literal" (which carry literal value as first item).
+local function parse(src, chunkname)
+   chunkname = chunkname or "ltq"
+   local tokens, err = lex.lex(src, chunkname)
+
+   if not tokens then
+      return nil, err
+   end
+
+   local ok, res = pcall(function() return parse_(src, chunkname, tokens) end)
+
+   if ok then
+      return res
+   else
+      return nil, res
+   end
 end
 
 return parse
